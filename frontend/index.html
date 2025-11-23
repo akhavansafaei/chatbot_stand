@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Stand</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Avatar Canvas -->
+        <div class="avatar-container">
+            <canvas id="avatarCanvas" width="400" height="600"></canvas>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <h1>AI Assistant</h1>
+                <div class="status" id="status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Connecting...</span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be displayed here -->
+            </div>
+
+            <div class="chat-input-container">
+                <div class="input-controls">
+                    <button id="recordBtn" class="btn btn-record" title="Start Recording">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Type your message or use voice..."
+                        autocomplete="off"
+                    />
+                    <button id="sendBtn" class="btn btn-send" title="Send Message">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+                <div id="transcriptionPreview" class="transcription-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio element for TTS playback -->
+    <audio id="audioPlayer" style="display: none;"></audio>
+
+    <script src="/static/js/avatar.js"></script>
+    <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

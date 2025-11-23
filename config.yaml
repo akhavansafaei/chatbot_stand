@@ -1,0 +1,75 @@
+# Chatbot Configuration
+
+# Server Settings
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+
+# ASR (Automatic Speech Recognition) Configuration
+asr:
+  provider: "whisper_local"  # Options: whisper_local, vosk_local
+
+  # Whisper settings (local)
+  whisper:
+    model: "base"  # Options: tiny, base, small, medium, large
+    language: "en"
+    device: "cpu"  # Options: cpu, cuda
+
+  # Vosk settings (local alternative)
+  vosk:
+    model_path: "models/vosk-model-small-en-us-0.15"
+    sample_rate: 16000
+
+# TTS (Text-to-Speech) Configuration
+tts:
+  provider: "openai"  # Options: openai, google
+
+  # OpenAI TTS settings
+  openai:
+    api_key: "YOUR_OPENAI_API_KEY"
+    model: "tts-1"  # Options: tts-1, tts-1-hd
+    voice: "alloy"  # Options: alloy, echo, fable, onyx, nova, shimmer
+    speed: 1.0
+
+  # Google TTS settings
+  google:
+    credentials_path: "credentials/google-tts-credentials.json"
+    language_code: "en-US"
+    voice_name: "en-US-Neural2-D"  # Male voice
+    speaking_rate: 1.0
+    pitch: 0.0
+    audio_encoding: "MP3"
+
+# LLM (Large Language Model) Configuration
+llm:
+  provider: "openai"  # Options: openai, google
+
+  # OpenAI settings
+  openai:
+    api_key: "YOUR_OPENAI_API_KEY"
+    model: "gpt-4o"  # Options: gpt-4o, gpt-4-turbo, gpt-3.5-turbo
+    temperature: 0.7
+    max_tokens: 2000
+    stream: true
+
+  # Google (Gemini) settings
+  google:
+    api_key: "YOUR_GOOGLE_API_KEY"
+    model: "gemini-1.5-pro"  # Options: gemini-1.5-pro, gemini-1.5-flash
+    temperature: 0.7
+    max_tokens: 2000
+    stream: true
+
+# Avatar Settings
+avatar:
+  type: "male"
+  background_color: "#FFFFFF"
+  mouth_animation: true
+  animation_sensitivity: 0.5  # 0.0 to 1.0
+
+# System Prompts
+system_prompt: |
+  You are a helpful AI assistant for a stand/booth.
+  Be friendly, concise, and engaging.
+  Keep responses clear and to the point.
