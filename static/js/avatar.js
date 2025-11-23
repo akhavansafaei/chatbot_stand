@@ -3,9 +3,10 @@
  */
 
 class Avatar {
-    constructor(canvasId) {
+    constructor(canvasId, gender = 'male') {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
+        this.gender = gender; // 'male' or 'female'
         this.isSpeaking = false;
         this.mouthOpenness = 0;
         this.targetMouthOpenness = 0;
@@ -15,6 +16,14 @@ class Avatar {
 
         // Animation loop
         this.animate();
+    }
+
+    /**
+     * Set avatar gender
+     * @param {string} gender - 'male' or 'female'
+     */
+    setGender(gender) {
+        this.gender = gender;
     }
 
     /**
@@ -39,7 +48,7 @@ class Avatar {
     }
 
     /**
-     * Draw the male avatar
+     * Draw the avatar (routes to male or female)
      */
     draw() {
         const ctx = this.ctx;
@@ -53,6 +62,19 @@ class Avatar {
         // Center position
         const centerX = width / 2;
         const centerY = height / 2;
+
+        // Draw based on gender
+        if (this.gender === 'female') {
+            this.drawFemale(ctx, centerX, centerY, width, height);
+        } else {
+            this.drawMale(ctx, centerX, centerY, width, height);
+        }
+    }
+
+    /**
+     * Draw the male avatar
+     */
+    drawMale(ctx, centerX, centerY, width, height) {
 
         // Head
         ctx.fillStyle = '#ffdbac';
@@ -130,6 +152,211 @@ class Avatar {
 
         // Mouth
         this.drawMouth(ctx, centerX, centerY);
+    }
+
+    /**
+     * Draw the female avatar
+     */
+    drawFemale(ctx, centerX, centerY, width, height) {
+        // Head
+        ctx.fillStyle = '#ffdbac';
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY - 50, 95, 115, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Neck
+        ctx.fillStyle = '#ffdbac';
+        ctx.fillRect(centerX - 25, centerY + 55, 50, 40);
+
+        // Shoulders/Body
+        ctx.fillStyle = '#e91e63'; // Pink/magenta dress
+        ctx.beginPath();
+        ctx.moveTo(centerX - 75, centerY + 95);
+        ctx.lineTo(centerX + 75, centerY + 95);
+        ctx.lineTo(centerX + 95, height);
+        ctx.lineTo(centerX - 95, height);
+        ctx.closePath();
+        ctx.fill();
+
+        // Dress neckline
+        ctx.strokeStyle = '#c2185b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY + 95, 30, Math.PI, Math.PI * 2);
+        ctx.stroke();
+
+        // Hair (longer, feminine style)
+        ctx.fillStyle = '#5d4037'; // Brown hair
+
+        // Top of hair
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY - 105, 110, 85, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Left side hair (flowing)
+        ctx.beginPath();
+        ctx.ellipse(centerX - 85, centerY - 20, 35, 80, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right side hair (flowing)
+        ctx.beginPath();
+        ctx.ellipse(centerX + 85, centerY - 20, 35, 80, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bangs
+        ctx.beginPath();
+        ctx.moveTo(centerX - 80, centerY - 100);
+        ctx.quadraticCurveTo(centerX - 60, centerY - 90, centerX - 40, centerY - 85);
+        ctx.quadraticCurveTo(centerX - 20, centerY - 90, centerX, centerY - 85);
+        ctx.quadraticCurveTo(centerX + 20, centerY - 90, centerX + 40, centerY - 85);
+        ctx.quadraticCurveTo(centerX + 60, centerY - 90, centerX + 80, centerY - 100);
+        ctx.lineTo(centerX + 80, centerY - 120);
+        ctx.lineTo(centerX - 80, centerY - 120);
+        ctx.closePath();
+        ctx.fill();
+
+        // Ears (smaller, more delicate)
+        ctx.fillStyle = '#ffdbac';
+        // Left ear
+        ctx.beginPath();
+        ctx.ellipse(centerX - 95, centerY - 45, 18, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Right ear
+        ctx.beginPath();
+        ctx.ellipse(centerX + 95, centerY - 45, 18, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Earrings
+        ctx.fillStyle = '#FFD700'; // Gold
+        // Left earring
+        ctx.beginPath();
+        ctx.arc(centerX - 95, centerY - 25, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Right earring
+        ctx.beginPath();
+        ctx.arc(centerX + 95, centerY - 25, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        this.drawEyes(ctx, centerX, centerY);
+
+        // Eyebrows (thinner, more arched)
+        ctx.strokeStyle = '#3d2817';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        // Left eyebrow (arched)
+        ctx.beginPath();
+        ctx.moveTo(centerX - 60, centerY - 78);
+        ctx.quadraticCurveTo(centerX - 45, centerY - 85, centerX - 30, centerY - 80);
+        ctx.stroke();
+        // Right eyebrow (arched)
+        ctx.beginPath();
+        ctx.moveTo(centerX + 30, centerY - 80);
+        ctx.quadraticCurveTo(centerX + 45, centerY - 85, centerX + 60, centerY - 78);
+        ctx.stroke();
+
+        // Eyelashes
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        // Left eye lashes
+        for (let i = 0; i < 5; i++) {
+            const angle = -Math.PI / 3 + (i * Math.PI / 12);
+            const startX = centerX - 45 + Math.cos(angle) * 15;
+            const startY = centerY - 50 + Math.sin(angle) * 18;
+            const endX = startX + Math.cos(angle) * 8;
+            const endY = startY + Math.sin(angle) * 8;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+        }
+        // Right eye lashes
+        for (let i = 0; i < 5; i++) {
+            const angle = -2 * Math.PI / 3 - (i * Math.PI / 12);
+            const startX = centerX + 45 + Math.cos(angle) * 15;
+            const startY = centerY - 50 + Math.sin(angle) * 18;
+            const endX = startX + Math.cos(angle) * 8;
+            const endY = startY + Math.sin(angle) * 8;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+        }
+
+        // Nose (more delicate)
+        ctx.strokeStyle = '#d4a574';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - 30);
+        ctx.lineTo(centerX - 6, centerY - 12);
+        ctx.moveTo(centerX, centerY - 30);
+        ctx.lineTo(centerX + 6, centerY - 12);
+        ctx.stroke();
+
+        // Lips (with color)
+        this.drawFemaleMouth(ctx, centerX, centerY);
+    }
+
+    /**
+     * Draw female mouth with lipstick
+     */
+    drawFemaleMouth(ctx, centerX, centerY) {
+        const mouthY = centerY + 20;
+
+        // Smooth mouth openness transition
+        this.mouthOpenness += (this.targetMouthOpenness - this.mouthOpenness) * 0.3;
+
+        if (this.isSpeaking && this.mouthOpenness > 0.1) {
+            // Open mouth (ellipse)
+            const mouthHeight = 10 + this.mouthOpenness * 30;
+
+            ctx.fillStyle = '#3d2817';
+            ctx.beginPath();
+            ctx.ellipse(centerX, mouthY + 5, 20, mouthHeight / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tongue (when mouth is open enough)
+            if (this.mouthOpenness > 0.3) {
+                ctx.fillStyle = '#ff6b6b';
+                ctx.beginPath();
+                ctx.ellipse(centerX, mouthY + 8, 12, mouthHeight / 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Lips outline
+            ctx.strokeStyle = '#c2185b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(centerX, mouthY + 5, 20, mouthHeight / 2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        } else {
+            // Closed lips with lipstick
+            ctx.fillStyle = '#e91e63';
+
+            // Upper lip
+            ctx.beginPath();
+            ctx.moveTo(centerX - 25, mouthY);
+            ctx.quadraticCurveTo(centerX - 15, mouthY - 5, centerX - 5, mouthY);
+            ctx.quadraticCurveTo(centerX, mouthY + 2, centerX + 5, mouthY);
+            ctx.quadraticCurveTo(centerX + 15, mouthY - 5, centerX + 25, mouthY);
+            ctx.quadraticCurveTo(centerX + 15, mouthY + 8, centerX, mouthY + 10);
+            ctx.quadraticCurveTo(centerX - 15, mouthY + 8, centerX - 25, mouthY);
+            ctx.fill();
+
+            // Lip shine
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(centerX, mouthY - 2, 12, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Smile curve
+            ctx.strokeStyle = '#c2185b';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.arc(centerX, mouthY - 15, 28, 0.3, Math.PI - 0.3);
+            ctx.stroke();
+        }
     }
 
     /**

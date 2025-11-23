@@ -4,7 +4,7 @@ A real-time chatbot system with an animated male avatar, designed for stand/boot
 
 ## Features
 
-- **Animated Male Avatar**: Real-time mouth animation synchronized with speech
+- **Animated Avatar**: Real-time mouth animation synchronized with speech (male and female options)
 - **GPU-Accelerated**: Optimized for NVIDIA GPUs with automatic detection and fallback
 - **Real-time Communication**: WebSocket-based streaming for instant responses
 - **Multi-provider Support**:
@@ -130,10 +130,14 @@ llm:
 
 # Avatar settings
 avatar:
-  type: "male"
+  gender: "male"  # male or female
   background_color: "#FFFFFF"
   mouth_animation: true
 ```
+
+**Avatar Options:**
+- `gender: "male"` or `gender: "female"` - Choose avatar appearance
+- Avatar features: Animated mouth sync, natural blinking, gender-specific styling
 
 **GPU Configuration:**
 - `device: "auto"` - Automatically detects and uses GPU if available

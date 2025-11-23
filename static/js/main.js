@@ -89,6 +89,18 @@ class ChatbotApp {
                     this.addSystemMessage(data.message);
                     break;
 
+                case 'config':
+                    // Apply avatar configuration
+                    if (data.avatar) {
+                        if (data.avatar.gender) {
+                            this.avatar.setGender(data.avatar.gender);
+                        }
+                        if (data.avatar.background_color) {
+                            this.canvas.style.backgroundColor = data.avatar.background_color;
+                        }
+                    }
+                    break;
+
                 case 'text_chunk':
                     this.appendToLastMessage(data.text);
                     break;

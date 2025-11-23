@@ -121,10 +121,20 @@ class ChatbotServer:
         logger.info(f"New WebSocket connection. Total connections: {len(self.active_connections)}")
 
         try:
-            # Send initial greeting
+            # Send initial greeting and configuration
             await websocket.send_json({
                 "type": "system",
                 "message": "Connected to chatbot server"
+            })
+
+            # Send avatar configuration
+            avatar_config = self.config_loader.get_avatar_config()
+            await websocket.send_json({
+                "type": "config",
+                "avatar": {
+                    "gender": avatar_config.get("gender", "male"),
+                    "background_color": avatar_config.get("background_color", "#FFFFFF")
+                }
             })
 
             while True:
