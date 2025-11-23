@@ -45,8 +45,22 @@ python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); 
 
 ### Step 2: Install GPU-Optimized Dependencies
 
+**Option A: faster-whisper (Recommended for most users):**
 ```bash
 pip install faster-whisper ctranslate2
+```
+
+**Option B: WhisperX (Advanced - best accuracy with word-level timestamps):**
+```bash
+pip install git+https://github.com/m-bain/whisperx.git
+pip install pyannote.audio
+```
+
+**Option C: Both (Maximum flexibility):**
+```bash
+pip install faster-whisper ctranslate2
+pip install git+https://github.com/m-bain/whisperx.git
+pip install pyannote.audio
 ```
 
 ### Step 3: Install Other Requirements
@@ -106,6 +120,82 @@ asr:
 | float32  | ✓   | Slow   | Best     | High   |
 
 **Recommendation:** Use `float16` for best speed/quality balance on GPU.
+
+## Choosing ASR Provider
+
+The system supports three GPU-optimized ASR providers:
+
+### 1. faster-whisper (Recommended for most users)
+
+**Pros:**
+- 4x faster than original Whisper
+- Lower memory usage
+- Easy to install
+- Stable and well-tested
+- VAD (Voice Activity Detection) built-in
+
+**Use when:**
+- You want the best speed/accuracy balance
+- You need reliable, production-ready transcription
+- Memory is limited
+
+**Config:**
+```yaml
+asr:
+  provider: "whisper_local"
+  whisper:
+    model: "medium"
+    device: "auto"
+    compute_type: "float16"
+```
+
+### 2. WhisperX (Advanced - Best Accuracy)
+
+**Pros:**
+- Best accuracy with forced alignment
+- Word-level timestamps
+- Better handling of punctuation
+- GPU batching for speed
+- Speaker diarization support
+
+**Cons:**
+- More complex installation
+- Higher memory usage
+- Requires additional models
+
+**Use when:**
+- You need word-level timestamps
+- Accuracy is more important than speed
+- You need speaker diarization
+- You have 8GB+ VRAM
+
+**Config:**
+```yaml
+asr:
+  provider: "whisperx_local"
+  whisperx:
+    model: "medium"
+    device: "auto"
+    compute_type: "float16"
+    batch_size: 16
+```
+
+### 3. Comparison Table
+
+| Feature              | faster-whisper | WhisperX        |
+|---------------------|----------------|-----------------|
+| Speed               | Very Fast      | Fast            |
+| Accuracy            | Excellent      | Best            |
+| Word timestamps     | No             | Yes             |
+| Speaker diarization | No             | Yes             |
+| Memory usage        | Low            | Medium-High     |
+| Installation        | Easy           | Moderate        |
+| VRAM required       | 4GB+           | 6GB+            |
+| Best for            | Production     | Maximum quality |
+
+**Recommendation:**
+- **Production/Stand:** Use `faster-whisper` (whisper_local)
+- **Research/Archive:** Use `WhisperX` (whisperx_local)
 
 ## Performance Benchmarks
 

@@ -8,16 +8,24 @@ server:
 
 # ASR (Automatic Speech Recognition) Configuration
 asr:
-  provider: "whisper_local"  # Options: whisper_local, vosk_local
+  provider: "whisper_local"  # Options: whisper_local, whisperx_local, vosk_local
 
-  # Whisper settings (local)
+  # Whisper settings (faster-whisper - GPU optimized)
   whisper:
     model: "medium"  # Options: tiny, base, small, medium, large, large-v2, large-v3
     language: "en"
     device: "auto"  # Options: auto (recommended), cuda, cpu
     compute_type: "float16"  # Options: float16 (GPU), int8 (GPU/CPU), float32 (CPU)
 
-  # Vosk settings (local alternative)
+  # WhisperX settings (GPU optimized with word-level timestamps and better accuracy)
+  whisperx:
+    model: "medium"  # Options: tiny, base, small, medium, large, large-v2, large-v3
+    language: "en"
+    device: "auto"  # Options: auto (recommended), cuda, cpu
+    compute_type: "float16"  # Options: float16 (GPU), int8, float32
+    batch_size: 16  # Batch size for GPU processing (higher = faster but more VRAM)
+
+  # Vosk settings (local CPU alternative)
   vosk:
     model_path: "models/vosk-model-small-en-us-0.15"
     sample_rate: 16000

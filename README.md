@@ -8,7 +8,7 @@ A real-time chatbot system with an animated male avatar, designed for stand/boot
 - **GPU-Accelerated**: Optimized for NVIDIA GPUs with automatic detection and fallback
 - **Real-time Communication**: WebSocket-based streaming for instant responses
 - **Multi-provider Support**:
-  - **ASR (Speech Recognition)**: Faster-Whisper (GPU-optimized), Whisper, Vosk
+  - **ASR (Speech Recognition)**: Faster-Whisper (GPU-optimized), WhisperX (advanced), Vosk
   - **TTS (Text-to-Speech)**: OpenAI, Google Cloud
   - **LLM (Language Model)**: OpenAI GPT, Google Gemini
 - **Voice Interaction**: Push-to-talk voice input with real-time transcription
@@ -103,9 +103,9 @@ llm:
 ### config.yaml Structure
 
 ```yaml
-# ASR Provider: whisper_local (GPU-optimized) or vosk_local
+# ASR Provider: whisper_local, whisperx_local (advanced), or vosk_local
 asr:
-  provider: "whisper_local"
+  provider: "whisper_local"  # Use whisperx_local for word-level timestamps
   whisper:
     model: "medium"  # tiny, base, small, medium, large, large-v3
     language: "en"

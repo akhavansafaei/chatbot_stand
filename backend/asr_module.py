@@ -151,6 +151,117 @@ class WhisperASR(ASRProvider):
             yield text
 
 
+class WhisperXASR(ASRProvider):
+    """WhisperX ASR provider (GPU-optimized with word-level timestamps and diarization)."""
+
+    def __init__(self, model: str = "base", language: str = "en",
+                 device: str = "auto", compute_type: str = "float16",
+                 batch_size: int = 16):
+        """Initialize WhisperX ASR.
+
+        Args:
+            model: Whisper model size
+            language: Language code
+            device: Device to run on (auto/cuda/cpu)
+            compute_type: Computation precision (float16/int8/float32)
+            batch_size: Batch size for GPU processing
+        """
+        from gpu_utils import get_gpu_manager
+
+        gpu_manager = get_gpu_manager()
+
+        # Get optimized device configuration
+        actual_device, actual_compute_type = gpu_manager.get_whisper_device_config(
+            device, compute_type
+        )
+
+        # Optimize model size based on GPU memory
+        actual_model = gpu_manager.optimize_model_size(model)
+
+        logger.info(f"Initializing WhisperX ASR:")
+        logger.info(f"  Model: {actual_model}")
+        logger.info(f"  Device: {actual_device}")
+        logger.info(f"  Compute Type: {actual_compute_type}")
+        logger.info(f"  Language: {language}")
+        logger.info(f"  Batch Size: {batch_size}")
+
+        try:
+            import whisperx
+            import torch
+
+            self.language = language
+            self.device = actual_device
+            self.compute_type = actual_compute_type
+            self.batch_size = batch_size
+
+            # Load WhisperX model
+            self.model = whisperx.load_model(
+                actual_model,
+                device=actual_device,
+                compute_type=actual_compute_type
+            )
+
+            logger.info("Using WhisperX (GPU-optimized with advanced features)")
+            logger.info("  Features: Word-level timestamps, better accuracy, batching")
+
+        except ImportError as e:
+            raise ImportError(
+                "Please install whisperx:\n"
+                "  pip install git+https://github.com/m-bain/whisperx.git\n"
+                "Note: WhisperX requires PyTorch with CUDA support"
+            ) from e
+
+    async def transcribe(self, audio_data: bytes) -> str:
+        """Transcribe audio data to text with word-level timestamps.
+
+        Args:
+            audio_data: Audio data in WAV format
+
+        Returns:
+            Transcribed text
+        """
+        import tempfile
+        import os
+        import whisperx
+
+        # Save audio to temporary file
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
+            temp_file.write(audio_data)
+            temp_path = temp_file.name
+
+        try:
+            # Load audio
+            audio = whisperx.load_audio(temp_path)
+
+            # Transcribe with WhisperX
+            result = self.model.transcribe(
+                audio,
+                batch_size=self.batch_size,
+                language=self.language
+            )
+
+            # Extract text from segments
+            text = " ".join([segment["text"] for segment in result["segments"]])
+            return text.strip()
+
+        finally:
+            os.unlink(temp_path)
+
+    async def transcribe_stream(self, audio_chunk: bytes) -> AsyncGenerator[str, None]:
+        """Transcribe audio stream.
+
+        Args:
+            audio_chunk: Audio chunk in bytes
+
+        Yields:
+            Transcription when complete
+        """
+        # WhisperX processes complete audio files, so we transcribe the chunk
+        text = await self.transcribe(audio_chunk)
+        if text:
+            yield text
+
+
 class VoskASR(ASRProvider):
     """Vosk ASR provider (local)."""
 
@@ -234,6 +345,15 @@ class ASRModule:
                 language=whisper_config.get("language", "en"),
                 device=whisper_config.get("device", "auto"),
                 compute_type=whisper_config.get("compute_type", "float16")
+            )
+        elif provider_name == "whisperx_local":
+            whisperx_config = self.config.get("whisperx", {})
+            return WhisperXASR(
+                model=whisperx_config.get("model", "base"),
+                language=whisperx_config.get("language", "en"),
+                device=whisperx_config.get("device", "auto"),
+                compute_type=whisperx_config.get("compute_type", "float16"),
+                batch_size=whisperx_config.get("batch_size", 16)
             )
         elif provider_name == "vosk_local":
             vosk_config = self.config.get("vosk", {})
