@@ -5,9 +5,10 @@ A real-time chatbot system with an animated male avatar, designed for stand/boot
 ## Features
 
 - **Animated Male Avatar**: Real-time mouth animation synchronized with speech
+- **GPU-Accelerated**: Optimized for NVIDIA GPUs with automatic detection and fallback
 - **Real-time Communication**: WebSocket-based streaming for instant responses
 - **Multi-provider Support**:
-  - **ASR (Speech Recognition)**: Whisper (local), Vosk (local)
+  - **ASR (Speech Recognition)**: Faster-Whisper (GPU-optimized), Whisper, Vosk
   - **TTS (Text-to-Speech)**: OpenAI, Google Cloud
   - **LLM (Language Model)**: OpenAI GPT, Google Gemini
 - **Voice Interaction**: Push-to-talk voice input with real-time transcription
@@ -39,30 +40,38 @@ chatbot_stand/
 
 ## Installation
 
-### 1. Clone the Repository
+### 1. GPU Setup (REQUIRED for optimal performance)
+
+**⚠️ IMPORTANT: Install GPU support first for best performance!**
+
+This system is optimized for NVIDIA GPUs. See [GPU_SETUP.md](GPU_SETUP.md) for detailed instructions.
+
+**Quick GPU Setup:**
+```bash
+# Install PyTorch with CUDA 12.1
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Verify CUDA is available
+python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
+```
+
+### 2. Clone the Repository
 
 ```bash
 git clone <repository-url>
 cd chatbot_stand
 ```
 
-### 2. Install Python Dependencies
+### 3. Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Download ASR Models (Optional)
-
-#### For Whisper (Automatic on first run):
-The model will be downloaded automatically when you first use it.
-
-#### For Vosk (Manual download):
-```bash
-# Download the model
-wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
-unzip vosk-model-small-en-us-0.15.zip -d models/
-```
+The system will automatically:
+- Detect your GPU and use it if available
+- Download Whisper models on first run (~1.5GB for medium model)
+- Use GPU-optimized faster-whisper for best performance
 
 ### 4. Configure API Keys
 
@@ -94,13 +103,14 @@ llm:
 ### config.yaml Structure
 
 ```yaml
-# ASR Provider: whisper_local or vosk_local
+# ASR Provider: whisper_local (GPU-optimized) or vosk_local
 asr:
   provider: "whisper_local"
   whisper:
-    model: "base"  # tiny, base, small, medium, large
+    model: "medium"  # tiny, base, small, medium, large, large-v3
     language: "en"
-    device: "cpu"  # cpu or cuda
+    device: "auto"  # auto (recommended), cuda, cpu
+    compute_type: "float16"  # float16 (GPU), int8, float32
 
 # TTS Provider: openai or google
 tts:
@@ -124,6 +134,13 @@ avatar:
   background_color: "#FFFFFF"
   mouth_animation: true
 ```
+
+**GPU Configuration:**
+- `device: "auto"` - Automatically detects and uses GPU if available
+- `compute_type: "float16"` - Uses FP16 precision for 2x faster GPU inference
+- `model: "medium"` - Good balance of speed and accuracy for GPU (6GB VRAM)
+
+See [GPU_SETUP.md](GPU_SETUP.md) for model recommendations based on your GPU memory.
 
 ## Usage
 

@@ -3,8 +3,11 @@
 import io
 import wave
 import json
+import logging
 from typing import Optional, AsyncGenerator
 from abc import ABC, abstractmethod
+
+logger = logging.getLogger(__name__)
 
 
 class ASRProvider(ABC):
@@ -36,22 +39,66 @@ class ASRProvider(ABC):
 
 
 class WhisperASR(ASRProvider):
-    """OpenAI Whisper ASR provider (local)."""
+    """Faster-Whisper ASR provider (GPU-optimized)."""
 
-    def __init__(self, model: str = "base", language: str = "en", device: str = "cpu"):
-        """Initialize Whisper ASR.
+    def __init__(self, model: str = "base", language: str = "en",
+                 device: str = "auto", compute_type: str = "float16"):
+        """Initialize Faster-Whisper ASR.
 
         Args:
             model: Whisper model size
             language: Language code
-            device: Device to run on (cpu/cuda)
+            device: Device to run on (auto/cuda/cpu)
+            compute_type: Computation precision (float16/int8/float32)
         """
+        from gpu_utils import get_gpu_manager
+
+        gpu_manager = get_gpu_manager()
+
+        # Get optimized device configuration
+        actual_device, actual_compute_type = gpu_manager.get_whisper_device_config(
+            device, compute_type
+        )
+
+        # Optimize model size based on GPU memory
+        actual_model = gpu_manager.optimize_model_size(model)
+
+        logger.info(f"Initializing Whisper ASR:")
+        logger.info(f"  Model: {actual_model}")
+        logger.info(f"  Device: {actual_device}")
+        logger.info(f"  Compute Type: {actual_compute_type}")
+        logger.info(f"  Language: {language}")
+
         try:
-            import whisper
-            self.model = whisper.load_model(model, device=device)
+            # Try faster-whisper first (much more efficient)
+            from faster_whisper import WhisperModel
+
+            self.model = WhisperModel(
+                actual_model,
+                device=actual_device,
+                compute_type=actual_compute_type
+            )
             self.language = language
+            self.use_faster_whisper = True
+            logger.info("Using faster-whisper (GPU-optimized)")
+
         except ImportError:
-            raise ImportError("Please install openai-whisper: pip install openai-whisper")
+            logger.warning("faster-whisper not available, falling back to openai-whisper")
+            logger.warning("For better GPU performance, install: pip install faster-whisper")
+
+            # Fallback to original whisper
+            try:
+                import whisper
+                self.model = whisper.load_model(actual_model, device=actual_device)
+                self.language = language
+                self.use_faster_whisper = False
+                logger.info("Using openai-whisper")
+            except ImportError:
+                raise ImportError(
+                    "Please install either faster-whisper or openai-whisper:\n"
+                    "  pip install faster-whisper (recommended for GPU)\n"
+                    "  pip install openai-whisper (fallback)"
+                )
 
     async def transcribe(self, audio_data: bytes) -> str:
         """Transcribe audio data to text.
@@ -71,8 +118,21 @@ class WhisperASR(ASRProvider):
             temp_path = temp_file.name
 
         try:
-            result = self.model.transcribe(temp_path, language=self.language)
-            return result["text"].strip()
+            if self.use_faster_whisper:
+                # Faster-whisper API
+                segments, info = self.model.transcribe(
+                    temp_path,
+                    language=self.language,
+                    vad_filter=True,  # Voice activity detection
+                    beam_size=5
+                )
+                # Combine all segments
+                text = " ".join([segment.text for segment in segments])
+                return text.strip()
+            else:
+                # Original whisper API
+                result = self.model.transcribe(temp_path, language=self.language)
+                return result["text"].strip()
         finally:
             os.unlink(temp_path)
 
@@ -172,7 +232,8 @@ class ASRModule:
             return WhisperASR(
                 model=whisper_config.get("model", "base"),
                 language=whisper_config.get("language", "en"),
-                device=whisper_config.get("device", "cpu")
+                device=whisper_config.get("device", "auto"),
+                compute_type=whisper_config.get("compute_type", "float16")
             )
         elif provider_name == "vosk_local":
             vosk_config = self.config.get("vosk", {})

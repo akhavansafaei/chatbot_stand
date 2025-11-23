@@ -15,6 +15,7 @@ from config_loader import ConfigLoader
 from asr_module import ASRModule
 from tts_module import TTSModule
 from llm_module import LLMModule
+from gpu_utils import get_gpu_manager
 
 # Configure logging
 logging.basicConfig(
@@ -33,6 +34,10 @@ class ChatbotServer:
         Args:
             config_path: Path to configuration file
         """
+        # Print GPU information
+        gpu_manager = get_gpu_manager()
+        gpu_manager.print_gpu_info()
+
         # Load configuration
         self.config_loader = ConfigLoader(config_path)
         server_config = self.config_loader.get_server_config()
